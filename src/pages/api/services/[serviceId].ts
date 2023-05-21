@@ -29,6 +29,7 @@ const handler: NextApiHandler = async (req, res) => {
     invariant(typeof gameId === "string", "gameId must be a string");
     const gameInfo = await getSteamGameInfo(gameId);
     res.status(200).json(gameInfo.data);
+	return;
   }
 
   invariant(typeof id === "string", "id must be a string");
