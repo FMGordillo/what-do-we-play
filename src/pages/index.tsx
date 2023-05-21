@@ -66,6 +66,7 @@ const Home: NextPage = () => {
               Enter your Steam URL (example here) (don't know which one is
               yours?{" "}
               <a
+				className="underline hover:text-blue-400"
                 href="https://www.steamidfinder.com/"
                 target="_blank"
                 rel="noreferrer noopener"
