@@ -1,12 +1,20 @@
 import { type NextPage } from "next";
 import axios from "axios";
 import Head from "next/head";
-import type { FormEventHandler } from "react";
+import { FormEventHandler, useState } from "react";
 
 type Game = { appid: string };
 type GameResponse = { response: { games: Game[] } };
 
+type GameSelected = {
+  name: string;
+  image: string;
+  link: string;
+};
+
 const Home: NextPage = () => {
+  const [gameSelected, setGameSelected] = useState<GameSelected | undefined>();
+
   const handleSubmit: FormEventHandler = (e) => {
     e.preventDefault();
 
@@ -16,16 +24,29 @@ const Home: NextPage = () => {
   };
 
   const getGames = async (steamId: string | undefined) => {
-    const steamResponse = await axios.get<GameResponse>(
+    const gamesOwnedByUser = await axios.get<GameResponse>(
       `/api/services/steam?id=${steamId}`
     );
 
     // parsing
-    const steamParsed = steamResponse.data.response.games.map(
+    const gamesOwnedByUserByAppid = gamesOwnedByUser.data.response.games.map(
       (game: Game) => game.appid
     );
 
-    return steamParsed;
+    const randomId = Math.floor(Math.random() * gamesOwnedByUserByAppid.length);
+    const appid = gamesOwnedByUserByAppid[randomId] || "";
+
+    const { data } = await axios.get(`/api/services/steam?gameId=${appid}`);
+
+    const haber = data[appid].data;
+
+    setGameSelected({
+      name: haber.name,
+      image: haber.header_image,
+      link: `https://store.steampowered.com/api/appdetails?appids${appid}`,
+    });
+
+    return gamesOwnedByUserByAppid;
   };
 
   return (
@@ -41,7 +62,18 @@ const Home: NextPage = () => {
           className="flex flex-col items-center gap-2"
         >
           <label>
-            <span>Enter your Steam URL (example here)</span>
+            <span>
+              Enter your Steam URL (example here) (don't know which one is
+              yours?{" "}
+              <a
+                href="https://www.steamidfinder.com/"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                click here
+              </a>
+              )
+            </span>
             <input
               name="steam"
               className="text-black"
@@ -76,6 +108,14 @@ const Home: NextPage = () => {
             value="Submit"
           />
         </form>
+        {gameSelected && (
+          <div>
+            <h1>Random game for you: {gameSelected.name}</h1>
+            <a href={gameSelected.link} target="_blank">
+              <img src={gameSelected.image} alt={gameSelected.name} />
+            </a>
+          </div>
+        )}
       </main>
     </>
   );

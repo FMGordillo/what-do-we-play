@@ -14,12 +14,21 @@ const getSteamGames = (steamId: string) =>
     }
   );
 
+const getSteamGameInfo = (appid: string) =>
+  axios.get(`https://store.steampowered.com/api/appdetails?appids=${appid}`);
+
 const handler: NextApiHandler = async (req, res) => {
-  const { id, serviceId } = req.query;
+  const { id, gameId, serviceId } = req.query;
 
   if (!serviceId) {
     res.status(400).json({ message: "Missing serviceId" });
     return;
+  }
+
+  if (gameId) {
+    invariant(typeof gameId === "string", "gameId must be a string");
+    const gameInfo = await getSteamGameInfo(gameId);
+    res.status(200).json(gameInfo.data);
   }
 
   invariant(typeof id === "string", "id must be a string");
