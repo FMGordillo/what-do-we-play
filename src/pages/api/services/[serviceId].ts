@@ -1,4 +1,6 @@
 import axios from "axios";
+import { NextApiHandler } from "next";
+import invariant from "tiny-invariant";
 
 const STEAM_API_KEY = process.env.STEAM_API_KEY || "";
 
@@ -12,13 +14,15 @@ const getSteamGames = (steamId: string) =>
     }
   );
 
-export default async function handler(req, res) {
+const handler: NextApiHandler = async (req, res) => {
   const { id, serviceId } = req.query;
 
   if (!serviceId) {
     res.status(400).json({ message: "Missing serviceId" });
     return;
   }
+
+  invariant(typeof id === "string", "id must be a string");
 
   let response;
 
@@ -33,4 +37,6 @@ export default async function handler(req, res) {
   }
 
   res.status(200).json(response.data);
-}
+};
+
+export default handler;

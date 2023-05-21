@@ -1,21 +1,31 @@
 import { type NextPage } from "next";
 import axios from "axios";
 import Head from "next/head";
-import { FormEventHandler } from "react";
+import type { FormEventHandler } from "react";
+
+type Game = { appid: string };
+type GameResponse = { response: { games: Game[] } };
 
 const Home: NextPage = () => {
-  const handleSubmit: FormEventHandler = async (e) => {
+  const handleSubmit: FormEventHandler = (e) => {
     e.preventDefault();
 
-    // fetch
-    const [steamId] = Object.values(e.target).map((e) => e.value);
-    const steamResponse = await axios.get(`/api/services/steam?id=${steamId}`);
+    // eslint-disable-next-line
+    const [steamId] = Object.values(e.target).map((e) => e.value) as string[];
+    getGames(steamId);
+  };
+
+  const getGames = async (steamId: string | undefined) => {
+    const steamResponse = await axios.get<GameResponse>(
+      `/api/services/steam?id=${steamId}`
+    );
 
     // parsing
     const steamParsed = steamResponse.data.response.games.map(
-      (game) => game.appid
+      (game: Game) => game.appid
     );
-    console.log({ steamParsed });
+
+    return steamParsed;
   };
 
   return (
